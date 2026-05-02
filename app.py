@@ -5,6 +5,10 @@ import google.generativeai as genai
 st.set_page_config(page_title="KAGO AI", page_icon="🤖")
 
 # 2. เชื่อมต่อกุญแจ (ย้าย model ออกมาข้างนอก try เพื่อความชัวร์)
+# วางรหัสตรงๆ ในโค้ดไปเลย
+genai.configure(api_key="AIzaSyxxxxxxxxxxxxxxxxx") # เอารหัสจริงมาวางในนี้
+model = genai.GenerativeModel('gemini-1.5-flash')
+
 
 st.title("🤖 KAGO AI Assistant")
 
