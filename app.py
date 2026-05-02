@@ -8,7 +8,7 @@ st.set_page_config(page_title="KAGO AI", page_icon="🤖")
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=API_KEY)
-    model = genai.GenerativeModel('gemini-pro')
+    model = genai.GenerativeModel('models/gemini-1.5-flash')
     st.sidebar.success("✅ เชื่อมต่อ AI สำเร็จ")
 except Exception as e:
     st.sidebar.error(f"❌ กุญแจผิด: {e}")
