@@ -1,32 +1,46 @@
 import streamlit as st
+import google.generativeai as genai
 
-# --- ข้อมูลรับเงิน ---
-MY_BANK = "BCEL One: 160XXXXXXXXXXXX" 
+# เชื่อมต่อกับกุญแจที่คุณใส่ในหน้า Secrets
+try:
+    genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
+    model = genai.GenerativeModel('gemini-1.5-flash')
+except:
+    st.error("❌ ไม่พบ API Key! กรุณาตรวจสอบหน้า Secrets อีกครั้ง")
 
-st.set_page_config(page_title="KAGO AI")
+st.set_page_config(page_title="KAGO AI", page_icon="🤖")
+
+# --- แถบข้างสำหรับระบบสมาชิก ---
+with st.sidebar:
+    st.title("💎 Membership")
+    st.info("โอนเงินเพื่อรับรหัสผ่านที่: BCEL One 160-XXXX-XXXX")
+    passcode = st.text_input("กรอกรหัสปลดล็อก:", type="password")
+    
+    if passcode == "KAGO888":
+        st.success("✅ ปลดล็อก Premium แล้ว!")
+        st.session_state.premium = True
+    else:
+        st.session_state.premium = False
+
+# --- หน้าแชทหลัก ---
 st.title("🤖 KAGO AI Smart Assistant")
 
-if "premium" not in st.session_state:
-    st.session_state.premium = False
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-# --- แถบข้าง ---
-st.sidebar.title("💎 Membership")
-if not st.session_state.premium:
-    st.sidebar.warning("Status: Free")
-    if st.sidebar.button("Upgrade to Premium"):
-        st.sidebar.info(f"Please transfer to: {MY_BANK}")
-    if st.sidebar.button("Test Premium Mode"): # ปุ่มไว้ให้คุณกดทดสอบเอง
-        st.session_state.premium = True
-else:
-    st.sidebar.success("Status: Premium (Smartest Mode)")
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
 
-# --- ส่วนแชท ---
-query = st.chat_input("Ask KAGO AI...")
-if query:
+if prompt := st.chat_input("พิมพ์คำถามของคุณ..."):
+    st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
-        st.write(query)
+        st.markdown(prompt)
+
     with st.chat_message("assistant"):
-        if st.session_state.premium:
-            st.write("🚀 (Premium) วิเคราะห์คำตอบด้วยสมองกลขั้นสูง...")
-        else:
-            st.write("🤖 (Free) ขอบคุณสำหรับคำถามครับ! สนใจอัปเกรดเพื่อความฉลาดเพิ่มไหม?")
+        try:
+            response = model.generate_content(prompt)
+            st.markdown(response.text)
+            st.session_state.messages.append({"role": "assistant", "content": response.text})
+        except:
+            st.error("AI กำลังรอสัญญาณ... กรุณาลองใหม่อีกครั้งครับ")
